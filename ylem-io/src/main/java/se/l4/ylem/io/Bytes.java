@@ -1,7 +1,9 @@
 package se.l4.ylem.io;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Objects;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -137,5 +139,40 @@ public interface Bytes
 	static Bytes create(@NonNull IOSupplier<InputStream> supplier)
 	{
 		return new InputStreamBytes(supplier);
+	}
+
+	/**
+	 * Capture the content of an {@link InputStream} and store it in memory.
+	 *
+	 * @param stream
+	 *   the stream to capture
+	 * @return
+	 *   instance of {@link Bytes}
+	 */
+	@NonNull
+	static Bytes capture(@NonNull InputStream stream)
+		throws IOException
+	{
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		stream.transferTo(out);
+		return create(out.toByteArray());
+	}
+
+	/**
+	 * Capture some bytes by asking them to be written by the given output
+	 * stream.
+	 *
+	 * @param stream
+	 *   the stream to capture
+	 * @return
+	 *   instance of {@link Bytes}
+	 */
+	@NonNull
+	static Bytes capture(@NonNull IOConsumer<OutputStream> creator)
+		throws IOException
+	{
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		creator.accept(out);
+		return create(out.toByteArray());
 	}
 }
